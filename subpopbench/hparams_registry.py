@@ -31,10 +31,25 @@ def _hparams(algorithm, dataset, random_seed):
         hparams[name] = (default_val, random_val_fn(random_state))
 
     # Unconditional hparam definitions
-
+    _hparam('dtype', 'bf16', lambda r: 'bf16') # fp32 / bf16
     _hparam('resnet18', False, lambda r: False)
     # nonlinear classifiers disabled
     _hparam('nonlinear_classifier', False, lambda r: bool(r.choice([False, False])))
+
+
+    # PEFT
+    _hparam('lora', False, lambda r: False)
+    _hparam('lora_rank', 64, lambda r: 64)
+
+    _hparam('mask', False, lambda r: False)
+    _hparam('mask_prob', 0.9, lambda r: 0.9)
+    _hparam('mask_seed', 0, lambda r: 0)
+
+    _hparam('mixout', False, lambda r: False)
+    _hparam('mixout_ema', 0.3, lambda r: 0.3)
+    _hparam('mixout_refresh', 50, lambda r: 50)
+    # PEFT
+
 
     if algorithm in ['ReSample', 'CRT']:
         _hparam('group_balanced', True, lambda r: True)
