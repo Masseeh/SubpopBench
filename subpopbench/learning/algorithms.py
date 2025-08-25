@@ -4,11 +4,13 @@ import torch.nn.functional as F
 import torch.autograd as autograd
 import numpy as np
 from transformers import get_scheduler
+from torch.amp import autocast
 
 from subpopbench.models import networks
 from subpopbench.learning import joint_dro
 from subpopbench.learning.optimizers import get_optimizers
 from subpopbench.utils.misc import mixup_data
+from subpopbench.learning.peft import *
 
 
 ALGORITHMS = [
@@ -65,6 +67,8 @@ class Algorithm(torch.nn.Module):
         self.num_attributes = num_attributes
         self.num_examples = num_examples
 
+        self.cast_type = torch.float32 if self.hparams["dtype"] == "fp32" else torch.bfloat16
+
     def _init_model(self):
         raise NotImplementedError
 
@@ -116,6 +120,19 @@ class ERM(Algorithm):
             num_classes,
             self.hparams['nonlinear_classifier']
         )
+
+        if self.hparams['lora'] or self.hparams['mask'] or self.hparams['mixout']:
+            assert hparams['text_arch'] == 'bert-base-uncased', "PEFT is only supported for BERT-Base"
+
+        if self.hparams['lora']:
+            LoRA(self.featurizer.model.encoder, r=self.hparams['lora_rank'])
+        elif self.hparams['mask']:
+            generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
+            Mask(self.featurizer.model.encoder, masking_prob=self.hparams['mask_prob'], generator=generator)
+        elif self.hparams['mixout']:
+            generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
+            Mixout(self.featurizer.model.encoder, masking_prob=self.hparams['mixout_prob'], mask_refresh=self.hparams['mixout_refresh'], mask_ema=self.hparams['mixout_ema'], generator=generator)
+
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
@@ -152,7 +169,9 @@ class ERM(Algorithm):
 
     def update(self, minibatch, step):
         all_i, all_x, all_y, all_a = minibatch
-        loss = self._compute_loss(all_i, all_x, all_y, all_a, step)
+
+        with autocast(device_type='cuda', dtype=self.cast_type):
+            loss = self._compute_loss(all_i, all_x, all_y, all_a, step)
 
         self.optimizer.zero_grad()
         loss.backward()

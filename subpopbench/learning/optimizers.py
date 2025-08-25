@@ -1,6 +1,4 @@
 import torch
-from transformers import AdamW
-
 
 def get_bert_optim(network, lr, weight_decay):
     no_decay = ["bias", "LayerNorm.weight"]
@@ -22,7 +20,7 @@ def get_bert_optim(network, lr, weight_decay):
             "weight_decay": 0.0,
         },
     ]
-    optimizer = AdamW(
+    optimizer = torch.optim.AdamW(
         optimizer_grouped_parameters,
         lr=lr,
         eps=1e-8)

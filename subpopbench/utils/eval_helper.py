@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.metrics import (accuracy_score, confusion_matrix, roc_auc_score, average_precision_score,
                              balanced_accuracy_score, recall_score, brier_score_loss, log_loss, classification_report)
 import netcal.metrics
+from torch.amp import autocast
 
 
 def predict_on_set(algorithm, loader, device):
@@ -14,13 +15,14 @@ def predict_on_set(algorithm, loader, device):
     algorithm.eval()
     with torch.no_grad():
         for _, x, y, a in loader:
-            p = algorithm.predict(x.to(device))
-            if p.squeeze().ndim == 1:
-                p = torch.sigmoid(p).detach().cpu().numpy()
-            else:
-                p = torch.softmax(p, dim=-1).detach().cpu().numpy()
-                if num_labels == 2:
-                    p = p[:, 1]
+            with autocast(device_type='cuda', dtype=algorithm.cast_type):
+                p = algorithm.predict(x.to(device))
+                if p.squeeze().ndim == 1:
+                    p = torch.sigmoid(p).detach().cpu().numpy()
+                else:
+                    p = torch.softmax(p, dim=-1).detach().cpu().numpy()
+                    if num_labels == 2:
+                        p = p[:, 1]
 
             ps.append(p)
             ys.append(y)
@@ -126,7 +128,7 @@ def prob_metrics(targets, preds, label_set, return_arrays=False):
 
     res = {
         'AUROC_ovo': roc_auc_score(targets, preds, multi_class='ovo', labels=label_set),
-        'BCE': log_loss(targets, preds, eps=1e-6, labels=label_set),
+        'BCE': log_loss(targets, preds, labels=label_set),
         'ECE': netcal.metrics.ECE().measure(preds, targets)
     }
 

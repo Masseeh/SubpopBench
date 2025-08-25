@@ -691,7 +691,7 @@ if __name__ == "__main__":
     parser.add_argument('datasets', nargs='+', type=str, default=[
         'celeba', 'waterbirds', 'civilcomments', 'multinli', 'imagenetbg', 'metashift', 'nico++',
         'mimic_cxr', 'chexpert', 'mimic_notes', 'cxr_multisite', 'breeds', 'cmnist'])
-    parser.add_argument('--data_path', type=str)
+    parser.add_argument('--data_path', type=str, default='/export/livia/home/vision/masih/local/masih/dataset')
     parser.add_argument('--download', action='store_true', default=False)
     args = parser.parse_args()
 

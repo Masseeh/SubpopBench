@@ -1,7 +1,10 @@
+import os
+os.environ["TORCH_HUB"] = "cache/"
+os.environ['HF_HOME'] = "cache/"
+
 import argparse
 import collections
 import json
-import os
 import random
 import sys
 import time
@@ -204,9 +207,8 @@ if __name__ == "__main__":
     if args.resume:
         if os.path.isfile(args.resume):
             print(f"===> Loading checkpoint '{args.resume}'")
-            checkpoint = torch.load(args.resume)
+            checkpoint = torch.load(args.resume, weights_only=False)
             start_step = checkpoint['start_step']
-            args.best_val_acc = checkpoint['best_val_acc']
             algorithm.load_state_dict(checkpoint['model_dict'])
             es = checkpoint['early_stopper']
             print(f"===> Loaded checkpoint '{args.resume}' (step [{start_step}])")
@@ -260,9 +262,9 @@ if __name__ == "__main__":
             results_keys = list(results.keys())
             if results_keys != last_results_keys:
                 print("\n")
-                misc.print_row([key for key in results_keys if key not in {'mem_gb', 'step_time'}], colwidth=12)
+                misc.print_row([key for key in results_keys if key not in {'mem_gb'}], colwidth=12)
                 last_results_keys = results_keys
-            misc.print_row([results[key] for key in results_keys if key not in {'mem_gb', 'step_time'}], colwidth=12)
+            misc.print_row([results[key] for key in results_keys if key not in {'mem_gb'}], colwidth=12)
             
             results['mem_gb'] = torch.cuda.max_memory_allocated() / (1024.*1024.*1024.)
 

@@ -257,7 +257,7 @@ class MultiNLI(SubpopDataset):
             "cached_dev_bert-base-uncased_128_mnli",
             "cached_dev_bert-base-uncased_128_mnli-mm",
         ]:
-            features = torch.load(os.path.join(root, feature_file))
+            features = torch.load(os.path.join(root, feature_file), weights_only=False)
             self.features_array += features
 
         self.all_input_ids = torch.tensor(

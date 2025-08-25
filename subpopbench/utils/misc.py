@@ -1,3 +1,4 @@
+import torch
 import hashlib
 import os
 import sys
@@ -9,6 +10,17 @@ import numpy as np
 import torch
 from collections import Counter
 
+def find_module(root_module: torch.nn.Module, key: str):
+    """
+    Find a module with a specific name in a Transformer model
+    From OpenDelta https://github.com/thunlp/OpenDelta
+    """
+    sub_keys = key.split(".")
+    parent_module = root_module
+    for sub_key in sub_keys[:-1]:
+        parent_module = getattr(parent_module, sub_key)
+    module = getattr(parent_module, sub_keys[-1])
+    return parent_module, sub_keys[-1], module
 
 def prepare_folders(args):
     folders_util = [args.output_dir,
@@ -220,6 +232,13 @@ class Tee:
     def __init__(self, fname, mode="a"):
         self.stdout = sys.stdout
         self.file = open(fname, mode)
+
+    def __getattr__(self, name):
+        if name == "write":
+            return self.write
+        elif name == "flush":
+            return self.flush
+        return getattr(self.stdout, name)
 
     def write(self, message):
         self.stdout.write(message)
