@@ -14,10 +14,8 @@ set -e
 dataset="CivilCommentsFine"
 arch="bert-base-uncased"
 
-lora=false
-mask=false
+ft="full"  # full/lp/lora/dora/mask/gmixout/mixout
 mixout=false
-gmixout=false
 lr=1e-5
 batch_size=196
 lora_rank=8
@@ -58,6 +56,7 @@ function parse_args
     done
 
     if [[ "${ft}" != "full" \
+            &&  "${ft}" != "lp" \
             &&  "${ft}" != "lora" \
             &&  "${ft}" != "dora" \
             && "${ft}" != "mask" \
@@ -71,30 +70,27 @@ function parse_args
 
 parse_args "$@"
 
-if [ $ft == "lora" ]; then
-  lora=true
-elif [ $ft == "mask" ]; then
-  mask=true
-elif [ $ft == "mixout" ]; then
-  mixout=true
-elif [ $ft == "gmixout" ]; then
-  gmixout=true
+if [ $ft == "lp" ]; then
+  lr=1e-4
+  algorithm="LP"
+  store_postfix="lr${lr}"
+  echo "Using LP with learning rate $lr"
 fi
-
-if [ "$lora" = true ]; then
+if [ $ft == "lora" ]; then
   lr=1e-4
   algorithm="LoRAERM"
   store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
-if [ "$mask" = true ]; then
+if [ $ft == "mask" ]; then
   lr=1e-5
   algorithm="MaskERM"
   store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
-if [ "$mixout" = true ]; then
+if [ $ft == "mixout" ]; then
   lr=1e-5
+  mixout=true
   mixout_refresh=1
   mixout_ema=1.0
   mask_momentum=false
@@ -102,7 +98,7 @@ if [ "$mixout" = true ]; then
   store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Mixout with learning rate $lr"
 fi
-if [ "$gmixout" = true ]; then
+if [ $ft == "gmixout" ]; then
   lr=1e-5
   algorithm="GMixoutERM"
   mask_momentum=true
@@ -130,7 +126,7 @@ python -m subpopbench.train \
       --text_arch $arch \
       --dataset $dataset \
       --use_es \
-      --es_patience 10 \
+      --es_patience 100 \
       --train_attr no \
       --data_dir $data_dir \
       --output_dir $outdir \

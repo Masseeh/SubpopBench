@@ -334,7 +334,7 @@ if __name__ == "__main__":
 
     # load best model and get metrics on eval sets
     if args.use_es and not args.skip_model_save:
-        algorithm.load_state_dict(torch.load(os.path.join(args.output_dir, "model.best.pkl"))['model_dict'])
+        algorithm.load_state_dict(torch.load(os.path.join(args.output_dir, "model.best.pkl"), weights_only=False)['model_dict'])
 
     algorithm.eval()
 

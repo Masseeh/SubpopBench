@@ -14,6 +14,7 @@ from subpopbench.learning.peft import *
 
 
 ALGORITHMS = [
+    'LP',
     'ERM',
     'LoRAERM',
     'MaskERM',
@@ -195,6 +196,18 @@ class ERM(Algorithm):
 
     def predict(self, x):
         return self.network(x)
+
+class LP(ERM):
+    """Linear Probe"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(LP, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+
+        for name, param in self.featurizer.named_parameters():
+            param.requires_grad = False
+
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        self._init_model()
 
 class LoRAERM(ERM):
     """ERM with LoRA applied to the featurizer"""
