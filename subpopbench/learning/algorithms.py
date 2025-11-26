@@ -17,6 +17,7 @@ ALGORITHMS = [
     'LP',
     'ERM',
     'LoRAERM',
+    'DoRAERM',
     'MaskERM',
     'GMixoutERM',
     # subgroup methods
@@ -216,6 +217,17 @@ class LoRAERM(ERM):
             data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
         assert hparams['text_arch'] == 'bert-base-uncased', "LoRA is only supported for BERT-Base"
         LoRA(self.featurizer.model.encoder, r=hparams['lora_rank'], alpha=hparams['lora_alpha'])
+
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        self._init_model()
+
+class DoRAERM(ERM):
+    """ERM with DoRA applied to the featurizer"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(DoRAERM, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+        assert hparams['text_arch'] == 'bert-base-uncased', "DoRA is only supported for BERT-Base"
+        DoRA(self.featurizer.model.encoder, r=hparams['lora_rank'], alpha=hparams['lora_alpha'])
 
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
