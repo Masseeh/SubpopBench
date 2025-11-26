@@ -29,6 +29,7 @@ store_postfix="full"
 seed=1
 algorithm="ERM"
 dense=true
+mask_momentum=false
 
 
 if [ -z "$SLURM_JOB_ID" ]; then
