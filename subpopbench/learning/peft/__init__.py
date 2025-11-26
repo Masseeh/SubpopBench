@@ -1,3 +1,3 @@
 from .lora import LoRA
-from .random_masking import RandomMasking as Mask
-from .mixout import RandomMasking as Mixout
+from .sparse_masking import RandomMasking as SRandomMasking, GMixout as SGMixout
+from .dense_masking import RandomMasking as DRandomMasking, GMixout as DGMixout

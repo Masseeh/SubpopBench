@@ -38,17 +38,17 @@ def _hparams(algorithm, dataset, random_seed):
 
 
     # PEFT
-    _hparam('lora', False, lambda r: False)
     _hparam('lora_rank', 8, lambda r: 8)
     _hparam('lora_alpha', 16, lambda r: 16)
 
-    _hparam('mask', False, lambda r: False)
-    _hparam('mask_prob', 0.9, lambda r: 0.9)
+    _hparam('mask_sparsity', 0.1, lambda r: 0.1)
     _hparam('mask_seed', 0, lambda r: 0)
 
     _hparam('mixout', False, lambda r: False)
     _hparam('mixout_ema', 0.3, lambda r: 0.3)
     _hparam('mixout_refresh', 50, lambda r: 50)
+    _hparam('dense', True, lambda r: True)
+    _hparam('mask_momentum', True, lambda r: True)
     # PEFT
 
 

@@ -17,16 +17,18 @@ arch="bert-base-uncased"
 lora=false
 mask=false
 mixout=false
+gmixout=false
 lr=1e-5
 batch_size=196
 lora_rank=8
 lora_alpha=16
-mask_prob=0.98
+mask_sparsity=0.02
 mixout_refresh=50
 mixout_ema=0.3
 store_postfix="full"
 seed=1
 algorithm="ERM"
+dense=true
 
 
 if [ -z "$SLURM_JOB_ID" ]; then
@@ -58,8 +60,9 @@ function parse_args
             &&  "${ft}" != "lora" \
             &&  "${ft}" != "dora" \
             && "${ft}" != "mask" \
+            && "${ft}" != "gmixout" \
             && "${ft}" != "mixout" ]]; then
-        echo "ft must be one of: lp/full/lora/dora/mask/mixout"
+        echo "ft must be one of: lp/full/lora/dora/mask/gmixout/mixout"
         usage
         exit;
     fi
@@ -73,6 +76,8 @@ elif [ $ft == "mask" ]; then
   mask=true
 elif [ $ft == "mixout" ]; then
   mixout=true
+elif [ $ft == "gmixout" ]; then
+  gmixout=true
 fi
 
 if [ "$lora" = true ]; then
@@ -84,14 +89,24 @@ fi
 if [ "$mask" = true ]; then
   lr=1e-5
   algorithm="MaskERM"
-  store_postfix="prob${mask_prob}_lr${lr}"
+  store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
 if [ "$mixout" = true ]; then
   lr=1e-5
-  algorithm="MixoutERM"
-  store_postfix="refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
+  mixout_refresh=1
+  mixout_ema=1.0
+  mask_momentum=false
+  algorithm="GMixoutERM"
+  store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Mixout with learning rate $lr"
+fi
+if [ "$gmixout" = true ]; then
+  lr=1e-5
+  algorithm="GMixoutERM"
+  mask_momentum=true
+  store_postfix="sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
+  echo "Using GMixout with learning rate $lr"
 fi
 
 if [ -z "$SLURM_JOB_ID" ]; then
@@ -120,7 +135,7 @@ python -m subpopbench.train \
       --output_dir $outdir \
       --output_folder_name "" \
       --store_postfix $store_postfix \
-      --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask_prob\": ${mask_prob}, \"mask_seed\": 42, \"mixout_refresh\": ${mixout_refresh}, \"mixout_ema\": ${mixout_ema}}" \
+      --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask_sparsity\": ${mask_sparsity}, \"mask_seed\": 42, \"mask_momentum\": ${mask_momentum}, \"mixout_refresh\": ${mixout_refresh}, \"mixout\": ${mixout},  \"mixout_ema\": ${mixout_ema}, \"dense\": ${dense}}" \
       --seed $seed \
       --checkpoint_freq 100 \
       # --resume $resume

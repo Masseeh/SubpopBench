@@ -17,7 +17,7 @@ ALGORITHMS = [
     'ERM',
     'LoRAERM',
     'MaskERM',
-    'MixoutERM',
+    'GMixoutERM',
     # subgroup methods
     'GroupDRO',
     'IRM',
@@ -214,22 +214,38 @@ class MaskERM(ERM):
             data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
         assert hparams['text_arch'] == 'bert-base-uncased', "Masking is only supported for BERT-Base"
         generator = torch.Generator().manual_seed(hparams['mask_seed'])
-        Mask(self.featurizer.model.encoder, masking_prob=hparams['mask_prob'], generator=generator)
+        if hparams['dense']:
+            print("Using Dense Masking")
+            DRandomMasking(self.featurizer.model.encoder, masking_prob=1-hparams['mask_sparsity'], generator=generator)
+        else:
+            print("Using Sparse Masking")
+            SRandomMasking(self.featurizer.model.encoder, masking_prob=1-hparams['mask_sparsity'], generator=generator)
 
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class MixoutERM(ERM):
+class GMixoutERM(ERM):
     """ERM with Mixout applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
-        super(MixoutERM, self).__init__(
+        super(GMixoutERM, self).__init__(
             data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
         assert hparams['text_arch'] == 'bert-base-uncased', "Mixout is only supported for BERT-Base"
         generator = torch.Generator().manual_seed(hparams['mask_seed'])
-        Mixout(self.featurizer.model.encoder, masking_prob=hparams['mixout_prob'], mask_refresh=hparams['mixout_refresh'], mask_ema=hparams['mixout_ema'], generator=generator)
+        if hparams['dense']:
+            print("Using Dense Mixout")
+            DGMixout(self.featurizer.model.encoder, masking_prob=1-hparams['mask_sparsity'], keep_momentum=hparams['mask_momentum'], use_mixout=hparams['mixout'],
+                      mask_refresh=hparams['mixout_refresh'], mask_ema=hparams['mixout_ema'], generator=generator)
+        else:
+            print("Using Sparse Mixout")
+            SGMixout(self.featurizer.model.encoder, masking_prob=1-hparams['mask_sparsity'], mask_refresh=hparams['mixout_refresh'], mask_ema=hparams['mixout_ema'], generator=generator)
 
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
+
+        if hparams['dense']:
+            for m in self.network.modules():
+                if isinstance(m, DGMixout):
+                    m.link_optimizer(self.optimizer)
 
 class GroupDRO(ERM):
     """
