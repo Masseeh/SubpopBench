@@ -113,6 +113,8 @@ python -m subpopbench.train \
       --algorithm $algorithm \
       --text_arch $arch \
       --dataset $dataset \
+      --use_es \
+      --es_patience 10 \
       --train_attr no \
       --data_dir $data_dir \
       --output_dir $outdir \
