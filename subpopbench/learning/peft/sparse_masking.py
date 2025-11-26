@@ -1,7 +1,13 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from spops import csr_add, sddmm
+
+try:
+    import spops
+    from spops import csr_add, sddmm
+except ImportError:
+    pass
+
 from torch.amp import custom_fwd
 from subpopbench.utils.misc import find_module
 
