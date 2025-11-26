@@ -160,7 +160,8 @@ class OracleMeanAcc(SelectionMethod):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
     @classmethod
     def run_acc(cls, run_records):
@@ -187,7 +188,8 @@ class OracleWorstAcc(SelectionMethod):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
     @classmethod
     def run_acc(cls, run_records):
@@ -213,7 +215,8 @@ class ValMeanAcc(SelectionMethod):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
     @classmethod
     def run_acc(cls, run_records):
@@ -241,7 +244,8 @@ class ValWorstAccAttributeYes(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValWorstAccAttributeNo(ValMeanAcc):
@@ -264,7 +268,8 @@ class ValWorstAccAttributeNo(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValMeanPrecision(ValMeanAcc):
@@ -286,7 +291,8 @@ class ValMeanPrecision(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValWorstPrecision(ValMeanAcc):
@@ -308,7 +314,8 @@ class ValWorstPrecision(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValMeanF1(ValMeanAcc):
@@ -330,7 +337,8 @@ class ValMeanF1(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValWorstF1(ValMeanAcc):
@@ -352,7 +360,8 @@ class ValWorstF1(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValBalancedAcc(ValMeanAcc):
@@ -374,7 +383,8 @@ class ValBalancedAcc(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValAUROC(ValMeanAcc):
@@ -396,7 +406,8 @@ class ValAUROC(ValMeanAcc):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
 
 class ValClassDiff(SelectionMethod):
@@ -427,7 +438,8 @@ class ValClassDiff(SelectionMethod):
                 'test_acc_balanced': record[te]['overall']['balanced_acc'],
                 'test_auroc': safe_load(record[te]['overall']['AUROC']),
                 'test_worst_auroc': safe_load(record[te]['min_attr']['AUROC']),
-                'test_ece': record[te]['overall']['ECE']}
+                # 'test_ece': record[te]['overall']['ECE']
+                }
 
     @classmethod
     def run_acc(cls, run_records):

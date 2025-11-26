@@ -65,7 +65,8 @@ def print_results_tables(records, selection_method, latex):
                        "sweep_acc_balanced": selection_method.sweep_acc_balanced(group["records"]),
                        "sweep_auroc": selection_method.sweep_auroc(group["records"]),
                        "sweep_worst_auroc": selection_method.sweep_worst_auroc(group["records"]),
-                       "sweep_ece": selection_method.sweep_ece(group["records"])}
+                    #    "sweep_ece": selection_method.sweep_ece(group["records"])
+                       }
     ).filter(lambda g: g["sweep_acc"] is not None)
 
     # AUC selection for certain datasets
@@ -81,7 +82,8 @@ def print_results_tables(records, selection_method, latex):
                        "sweep_acc_balanced": model_selection.ValAUROC.sweep_acc_balanced(group["records"]),
                        "sweep_auroc": model_selection.ValAUROC.sweep_auroc(group["records"]),
                        "sweep_worst_auroc": selection_method.sweep_worst_auroc(group["records"]),
-                       "sweep_ece": model_selection.ValAUROC.sweep_ece(group["records"])}
+                    #    "sweep_ece": model_selection.ValAUROC.sweep_ece(group["records"])
+                       }
     ).filter(lambda g: g["sweep_acc"] is not None)
 
     # read algorithm names and sort (predefined order)
@@ -101,7 +103,7 @@ def print_results_tables(records, selection_method, latex):
 
         metrics = ["Avg", "Worst", "AvgPrec", "WorstPrec", "AvgF1", "WorstF1", "Adjusted", "Balanced", "AUROC", "ECE"]
         metrics_sweep = ["sweep_acc", "sweep_acc_worst", "sweep_precision", "sweep_precision_worst", "sweep_f1",
-                         "sweep_f1_worst", "sweep_acc_adjusted", "sweep_acc_balanced", "sweep_auroc", "sweep_ece"]
+                         "sweep_f1_worst", "sweep_acc_adjusted", "sweep_acc_balanced", "sweep_auroc"]
         table = [[None for _ in metrics] for _ in alg_names]
 
         curr_records = auc_grouped_records if dataset in ["MIMICNotes", "CXRMultisite"] else grouped_records
@@ -177,7 +179,7 @@ if __name__ == "__main__":
     SELECTION_METHODS = [
         model_selection.OracleWorstAcc,
         model_selection.ValWorstAccAttributeYes,
-        model_selection.ValWorstAccAttributeNo,
+        model_selection.ValWorstAccAttributeNo
     ]
 
     for selection_method in SELECTION_METHODS:
