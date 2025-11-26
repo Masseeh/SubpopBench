@@ -25,7 +25,7 @@ mask_prob=0.98
 mixout_refresh=50
 mixout_ema=0.3
 store_postfix="full"
-seed=0
+seed=1
 algorithm="ERM"
 
 
