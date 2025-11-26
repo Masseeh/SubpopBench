@@ -28,8 +28,16 @@ store_postfix="full"
 seed=0
 algorithm="ERM"
 
-outdir=$project/workspace/SubpopBench/output
-data_dir=$SLURM_TMPDIR
+
+if [ -z "$SLURM_JOB_ID" ]; then
+    echo "Running on a local machine"
+    outdir=./output
+    data_dir="/export/livia/home/vision/masih/local/masih/dataset"
+else
+    echo "Running on a cluster"
+    outdir=$project/workspace/SubpopBench/output
+    data_dir=$SLURM_TMPDIR
+fi
 
 function parse_args
 {
@@ -86,15 +94,19 @@ if [ "$mixout" = true ]; then
   echo "Using Mixout with learning rate $lr"
 fi
 
-bash scripts/prepare_dataset.sh
+if [ -z "$SLURM_JOB_ID" ]; then
+    echo "skip"
+else
+    bash scripts/prepare_dataset.sh
+    echo "syncing SubpopBench repo in $SLURM_TMPDIR"
+    rsync -av ../SubpopBench $SLURM_TMPDIR --exclude output --exclude .venv --exclude .git --exclude slurm_logs
+    cd $SLURM_TMPDIR/SubpopBench
 
-echo "syncing SubpopBench repo in $SLURM_TMPDIR"
-rsync -av ../SubpopBench $SLURM_TMPDIR --exclude output --exclude .venv --exclude .git --exclude slurm_logs
-cd $SLURM_TMPDIR/SubpopBench
+    bash scripts/create_venv_slurm.sh
+    echo "activating virtual environment"
+    source .venv/bin/activate
+fi
 
-bash scripts/create_venv_slurm.sh
-echo "activating virtual environment"
-source .venv/bin/activate
 echo "running experiment"
 
 python -m subpopbench.train \

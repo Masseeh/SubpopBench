@@ -204,6 +204,9 @@ class LoRAERM(ERM):
         assert hparams['text_arch'] == 'bert-base-uncased', "LoRA is only supported for BERT-Base"
         LoRA(self.featurizer.model.encoder, r=hparams['lora_rank'], alpha=hparams['lora_alpha'])
 
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        self._init_model()
+
 class MaskERM(ERM):
     """ERM with Masking applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
@@ -213,6 +216,9 @@ class MaskERM(ERM):
         generator = torch.Generator().manual_seed(hparams['mask_seed'])
         Mask(self.featurizer.model.encoder, masking_prob=hparams['mask_prob'], generator=generator)
 
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        self._init_model()
+
 class MixoutERM(ERM):
     """ERM with Mixout applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
@@ -221,6 +227,9 @@ class MixoutERM(ERM):
         assert hparams['text_arch'] == 'bert-base-uncased', "Mixout is only supported for BERT-Base"
         generator = torch.Generator().manual_seed(hparams['mask_seed'])
         Mixout(self.featurizer.model.encoder, masking_prob=hparams['mixout_prob'], mask_refresh=hparams['mixout_refresh'], mask_ema=hparams['mixout_ema'], generator=generator)
+
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        self._init_model()
 
 class GroupDRO(ERM):
     """
