@@ -66,17 +66,17 @@ fi
 
 if [ "$lora" = true ]; then
   lr=1e-4
-  store_postfix="lora"
+  store_postfix="lora_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
 if [ "$mask" = true ]; then
   lr=1e-5
-  store_postfix="mask"
+  store_postfix="mask_prob${mask_prob}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
 if [ "$mixout" = true ]; then
   lr=1e-5
-  store_postfix="mixout"
+  store_postfix="mixout_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
   echo "Using Mixout with learning rate $lr"
 fi
 

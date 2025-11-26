@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import (accuracy_score, confusion_matrix, roc_auc_score, average_precision_score,
                              balanced_accuracy_score, recall_score, brier_score_loss, log_loss, classification_report)
-import netcal.metrics
+# import netcal.metrics
 from torch.amp import autocast
 
 
@@ -129,7 +129,7 @@ def prob_metrics(targets, preds, label_set, return_arrays=False):
     res = {
         'AUROC_ovo': roc_auc_score(targets, preds, multi_class='ovo', labels=label_set),
         'BCE': log_loss(targets, preds, labels=label_set),
-        'ECE': netcal.metrics.ECE().measure(preds, targets)
+        # 'ECE': netcal.metrics.ECE().measure(preds, targets)
     }
 
     # happens when you predict a class, but there are no samples with that class in the dataset
