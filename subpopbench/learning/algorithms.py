@@ -15,6 +15,9 @@ from subpopbench.learning.peft import *
 
 ALGORITHMS = [
     'ERM',
+    'LoRAERM',
+    'MaskERM',
+    'MixoutERM',
     # subgroup methods
     'GroupDRO',
     'IRM',
@@ -121,17 +124,17 @@ class ERM(Algorithm):
             self.hparams['nonlinear_classifier']
         )
 
-        if self.hparams['lora'] or self.hparams['mask'] or self.hparams['mixout']:
-            assert hparams['text_arch'] == 'bert-base-uncased', "PEFT is only supported for BERT-Base"
+        # if self.hparams['lora'] or self.hparams['mask'] or self.hparams['mixout']:
+        #     assert hparams['text_arch'] == 'bert-base-uncased', "PEFT is only supported for BERT-Base"
 
-        if self.hparams['lora']:
-            LoRA(self.featurizer.model.encoder, r=self.hparams['lora_rank'], alpha=self.hparams['lora_alpha'])
-        elif self.hparams['mask']:
-            generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
-            Mask(self.featurizer.model.encoder, masking_prob=self.hparams['mask_prob'], generator=generator)
-        elif self.hparams['mixout']:
-            generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
-            Mixout(self.featurizer.model.encoder, masking_prob=self.hparams['mixout_prob'], mask_refresh=self.hparams['mixout_refresh'], mask_ema=self.hparams['mixout_ema'], generator=generator)
+        # if self.hparams['lora']:
+        #     LoRA(self.featurizer.model.encoder, r=self.hparams['lora_rank'], alpha=self.hparams['lora_alpha'])
+        # elif self.hparams['mask']:
+        #     generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
+        #     Mask(self.featurizer.model.encoder, masking_prob=self.hparams['mask_prob'], generator=generator)
+        # elif self.hparams['mixout']:
+        #     generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
+        #     Mixout(self.featurizer.model.encoder, masking_prob=self.hparams['mixout_prob'], mask_refresh=self.hparams['mixout_refresh'], mask_ema=self.hparams['mixout_ema'], generator=generator)
         
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
@@ -193,6 +196,31 @@ class ERM(Algorithm):
     def predict(self, x):
         return self.network(x)
 
+class LoRAERM(ERM):
+    """ERM with LoRA applied to the featurizer"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(LoRAERM, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+        assert hparams['text_arch'] == 'bert-base-uncased', "LoRA is only supported for BERT-Base"
+        LoRA(self.featurizer.model.encoder, r=hparams['lora_rank'], alpha=hparams['lora_alpha'])
+
+class MaskERM(ERM):
+    """ERM with Masking applied to the featurizer"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(MaskERM, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+        assert hparams['text_arch'] == 'bert-base-uncased', "Masking is only supported for BERT-Base"
+        generator = torch.Generator().manual_seed(hparams['mask_seed'])
+        Mask(self.featurizer.model.encoder, masking_prob=hparams['mask_prob'], generator=generator)
+
+class MixoutERM(ERM):
+    """ERM with Mixout applied to the featurizer"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(MixoutERM, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+        assert hparams['text_arch'] == 'bert-base-uncased', "Mixout is only supported for BERT-Base"
+        generator = torch.Generator().manual_seed(hparams['mask_seed'])
+        Mixout(self.featurizer.model.encoder, masking_prob=hparams['mixout_prob'], mask_refresh=hparams['mixout_refresh'], mask_ema=hparams['mixout_ema'], generator=generator)
 
 class GroupDRO(ERM):
     """

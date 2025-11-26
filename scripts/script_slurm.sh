@@ -25,6 +25,8 @@ mask_prob=0.98
 mixout_refresh=50
 mixout_ema=0.3
 store_postfix="full"
+seed=0
+algorithm="ERM"
 
 outdir=$project/workspace/SubpopBench/output
 data_dir=$SLURM_TMPDIR
@@ -39,6 +41,7 @@ function parse_args
     while [ "$1" != "" ]; do
         case "$1" in
             --ft )                        ft="$2";                      shift 2;;
+            --seed )                      seed="$2";                    shift 2;;
             * )                           args+=("$1");                 shift;;         # if no match, add it to the positional args
         esac
     done
@@ -66,17 +69,20 @@ fi
 
 if [ "$lora" = true ]; then
   lr=1e-4
-  store_postfix="lora_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
+  algorithm="LoRAERM"
+  store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
 if [ "$mask" = true ]; then
   lr=1e-5
-  store_postfix="mask_prob${mask_prob}_lr${lr}"
+  algorithm="MaskERM"
+  store_postfix="prob${mask_prob}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
 if [ "$mixout" = true ]; then
   lr=1e-5
-  store_postfix="mixout_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
+  algorithm="MixoutERM"
+  store_postfix="refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
   echo "Using Mixout with learning rate $lr"
 fi
 
@@ -92,7 +98,7 @@ source .venv/bin/activate
 echo "running experiment"
 
 python -m subpopbench.train \
-      --algorithm ERM \
+      --algorithm $algorithm \
       --text_arch $arch \
       --dataset $dataset \
       --train_attr no \
@@ -100,7 +106,7 @@ python -m subpopbench.train \
       --output_dir $outdir \
       --output_folder_name "" \
       --store_postfix $store_postfix \
-      --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora\": ${lora}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask\": ${mask}, \"mask_prob\": ${mask_prob}, \"mask_seed\": 42, \"mixout\": ${mixout}, \"mixout_refresh\": ${mixout_refresh}, \"mixout_ema\": ${mixout_ema}}" \
-      --seed 1 \
+      --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask_prob\": ${mask_prob}, \"mask_seed\": 42, \"mixout_refresh\": ${mixout_refresh}, \"mixout_ema\": ${mixout_ema}}" \
+      --seed $seed \
       --checkpoint_freq 100 \
       # --resume $resume
