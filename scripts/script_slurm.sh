@@ -82,15 +82,9 @@ fi
 
 bash scripts/prepare_dataset.sh
 
-# skip rsync if the current directory is already $SLURM_TMPDIR/SubpopBench
-if [ "$PWD" == "$SLURM_TMPDIR/SubpopBench" ]; then
-    echo "already in $SLURM_TMPDIR/SubpopBench"
-    echo "skip rsync"
-else
-    echo "syncing SubpopBench repo in $SLURM_TMPDIR"
-    rsync -av ../SubpopBench $SLURM_TMPDIR --exclude output --exclude .venv --exclude .git --exclude slurm_logs
-    cd $SLURM_TMPDIR/SubpopBench
-fi
+echo "syncing SubpopBench repo in $SLURM_TMPDIR"
+rsync -av ../SubpopBench $SLURM_TMPDIR --exclude output --exclude .venv --exclude .git --exclude slurm_logs
+cd $SLURM_TMPDIR/SubpopBench
 
 bash scripts/create_venv_slurm.sh
 echo "activating virtual environment"
