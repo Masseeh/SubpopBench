@@ -21,7 +21,7 @@ batch_size=196
 lora_rank=8
 lora_alpha=16
 mask_sparsity=0.02
-mixout_refresh=100
+mixout_refresh=20
 mixout_ema=0.3
 store_postfix="full"
 seed=1
@@ -96,7 +96,7 @@ if [ $ft == "mask" ]; then
   echo "Using Masking with learning rate $lr"
 fi
 if [ $ft == "mixout" ]; then
-  lr=1e-4
+  lr=5e-5
   mixout=true
   mixout_refresh=1
   mixout_ema=1.0
@@ -106,7 +106,7 @@ if [ $ft == "mixout" ]; then
   echo "Using Mixout with learning rate $lr"
 fi
 if [ $ft == "gmixout" ]; then
-  lr=1e-4
+  lr=5e-5
   algorithm="GMixoutERM"
   mask_momentum=true
   store_postfix="sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
