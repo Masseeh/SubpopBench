@@ -10,6 +10,19 @@ import numpy as np
 import torch
 from collections import Counter
 
+class DummyWriter:
+    def __init__(self, _writer) -> None:
+        self._writer = _writer
+    def add_scalar(self, *args, **kwargs):
+        if self._writer is not None:
+            self._writer.add_scalar(*args, **kwargs)
+    def log_value(self, *args, **kwargs):
+        if self._writer is not None:
+            self._writer.log_value(*args, **kwargs)
+    def close(self):
+        if self._writer is not None:
+            self._writer.close()
+
 def find_module(root_module: torch.nn.Module, key: str):
     """
     Find a module with a specific name in a Transformer model

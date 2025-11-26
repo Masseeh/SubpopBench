@@ -16,6 +16,8 @@ if [ ! -d ".venv" ]; then
     echo "installing requirements in virtual environment"
 
     pip install --no-index -r requirements.txt
+
+    module load cuda/12.2
     pip install git+https://github.com/IST-DASLab/spops.git
     end=`date +%s`
     echo "virtual environment created and requirements installed in $((end - start)) seconds"

@@ -15,7 +15,8 @@ import pickle
 import torch
 import torchvision
 import torch.utils.data
-from tensorboard_logger import Logger
+# from tensorboard_logger import Logger
+from torch.utils.tensorboard import SummaryWriter
 
 from subpopbench import hparams_registry
 from subpopbench.dataset import datasets
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     parser.add_argument('--seed', type=int, default=0, help='Seed for everything else')
     parser.add_argument('--steps', type=int, default=None)
     parser.add_argument('--tb_log_all', action='store_true')
+    parser.add_argument('--tb_log', action='store_true')
     # two-stage related
     parser.add_argument('--stage1_folder', type=str, default='vanilla')
     parser.add_argument('--stage1_algo', type=str, default='ERM')
@@ -83,7 +85,10 @@ if __name__ == "__main__":
     sys.stdout = misc.Tee(os.path.join(args.output_dir, 'out.txt'))
     sys.stderr = misc.Tee(os.path.join(args.output_dir, 'err.txt'))
 
-    tb_logger = Logger(logdir=args.output_dir, flush_secs=2)
+    if args.tb_log:
+        tb_logger = misc.DummyWriter(SummaryWriter(log_dir=args.output_dir))
+    else:
+        tb_logger = misc.DummyWriter(None)
 
     print("Environment:")
     print("\tPython: {}".format(sys.version.split(" ")[0]))

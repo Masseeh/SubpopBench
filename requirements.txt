@@ -16,11 +16,9 @@ numexpr
 openpyxl
 parameterized
 submitit
-tensorboard-logger
+# tensorboard-logger
 tokenizers
 transformers
-vissl
-wilds
-netcal
+# git+https://github.com/EFS-OpenSource/calibration-framework.git
+# git+https://github.com/nschloe/tikzplotlib.git
 matplotlib
-psycopg2-binary
