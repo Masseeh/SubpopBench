@@ -32,6 +32,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_folder_name', type=str, default='debug')
     parser.add_argument('--train_attr', type=str, default="yes", choices=['yes', 'no'])
     # others
+    parser.add_argument('--store_postfix', type=str, default='')
     parser.add_argument('--data_dir', type=str, default="./data")
     parser.add_argument('--output_dir', type=str, default="./output")
     parser.add_argument('--hparams', type=str, help='JSON-serialized hparams dict')
@@ -70,7 +71,11 @@ if __name__ == "__main__":
     start_step = 0
     store_prefix = f"{args.dataset}_{args.cmnist_label_prob}_{args.cmnist_attr_prob}_{args.cmnist_spur_prob}" \
                    f"_{args.cmnist_flip_prob}" if args.dataset == "CMNIST" else args.dataset
-    args.store_name = f"{store_prefix}_{args.algorithm}_hparams{args.hparams_seed}_seed{args.seed}"
+    
+    if args.store_postfix != '':
+        store_postfix = f"_{args.store_postfix}_"
+
+    args.store_name = f"{store_prefix}_{args.algorithm}{store_postfix}hparams{args.hparams_seed}_seed{args.seed}"
     args.output_folder_name += "_attrYes" if args.train_attr == 'yes' else "_attrNo"
 
     misc.prepare_folders(args)
@@ -145,6 +150,10 @@ if __name__ == "__main__":
     num_attributes = train_dataset.num_attributes
     data_type = train_dataset.data_type
     n_steps = args.steps or train_dataset.N_STEPS
+
+    bs_mlt = 32 / hparams['batch_size'] if hparams['batch_size'] > 32 else 1
+    n_steps = int(n_steps * bs_mlt)
+
     checkpoint_freq = args.checkpoint_freq or train_dataset.CHECKPOINT_FREQ
 
     hparams.update({
@@ -152,6 +161,7 @@ if __name__ == "__main__":
     })
     print(f"Dataset:\n\t[train]\t{len(train_dataset)} (with{'' if args.train_attr == 'yes' else 'out'} attributes)"
           f"\n\t[val]\t{len(val_dataset)}\n\t[test]\t{len(test_dataset)}")
+    print(f"Training for {n_steps} steps")
 
     if hparams['group_balanced']:
         # if attribute not available, groups degenerate to classes

@@ -72,7 +72,7 @@ class LoRALinear(torch.nn.Module):
 
 class LoRA:
 
-    def __init__(self, model, r):
+    def __init__(self, model, r, alpha):
         # find all of the Linear layer in model
         linear_layers = []
         for key, module in model.named_modules():
@@ -84,7 +84,7 @@ class LoRA:
             parent_module, sub_key, _ = find_module(model, key)
             setattr(parent_module, sub_key,
                     LoRALinear(base_Linear=module, in_features=module.in_features,
-                               out_features=module.out_features, r=r))
+                               out_features=module.out_features, r=r, lora_alpha=alpha))
 
         # Freeze non-LoRA parameters
         for n, p in model.named_parameters():

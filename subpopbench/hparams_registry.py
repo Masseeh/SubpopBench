@@ -39,7 +39,8 @@ def _hparams(algorithm, dataset, random_seed):
 
     # PEFT
     _hparam('lora', False, lambda r: False)
-    _hparam('lora_rank', 64, lambda r: 64)
+    _hparam('lora_rank', 8, lambda r: 8)
+    _hparam('lora_alpha', 16, lambda r: 16)
 
     _hparam('mask', False, lambda r: False)
     _hparam('mask_prob', 0.9, lambda r: 0.9)
