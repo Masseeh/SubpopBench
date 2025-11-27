@@ -21,7 +21,7 @@ batch_size=196
 lora_rank=8
 lora_alpha=16
 mask_sparsity=0.02
-mixout_refresh=20
+mixout_refresh=10
 mixout_ema=0.3
 store_postfix="full"
 seed=1
@@ -85,13 +85,13 @@ if [ $ft == "ma" ]; then
   echo "Using MA with learning rate $lr"
 fi
 if [ $ft == "lora" ]; then
-  lr=1e-4
+  lr=5e-5
   algorithm="LoRAERM"
   store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
 if [ $ft == "dora" ]; then
-  lr=1e-4
+  lr=5e-5
   algorithm="DoRAERM"
   store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using DoRA with learning rate $lr"
