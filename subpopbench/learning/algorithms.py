@@ -6,6 +6,7 @@ import numpy as np
 from transformers import get_scheduler
 from torch.amp import autocast
 
+import copy
 from subpopbench.models import networks
 from subpopbench.learning import joint_dro
 from subpopbench.learning.optimizers import get_optimizers
@@ -16,6 +17,7 @@ from subpopbench.learning.peft import *
 ALGORITHMS = [
     'LP',
     'ERM',
+    'MA',
     'LoRAERM',
     'DoRAERM',
     'MaskERM',
@@ -126,18 +128,6 @@ class ERM(Algorithm):
             self.hparams['nonlinear_classifier']
         )
 
-        # if self.hparams['lora'] or self.hparams['mask'] or self.hparams['mixout']:
-        #     assert hparams['text_arch'] == 'bert-base-uncased', "PEFT is only supported for BERT-Base"
-
-        # if self.hparams['lora']:
-        #     LoRA(self.featurizer.model.encoder, r=self.hparams['lora_rank'], alpha=self.hparams['lora_alpha'])
-        # elif self.hparams['mask']:
-        #     generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
-        #     Mask(self.featurizer.model.encoder, masking_prob=self.hparams['mask_prob'], generator=generator)
-        # elif self.hparams['mixout']:
-        #     generator = torch.Generator().manual_seed(self.hparams['mask_seed'])
-        #     Mixout(self.featurizer.model.encoder, masking_prob=self.hparams['mixout_prob'], mask_refresh=self.hparams['mixout_refresh'], mask_ema=self.hparams['mixout_ema'], generator=generator)
-        
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
@@ -198,6 +188,59 @@ class ERM(Algorithm):
     def predict(self, x):
         return self.network(x)
 
+class BSoftmax(ERM):
+    """Balanced softmax, https://arxiv.org/abs/2007.10740"""
+    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
+        super(BSoftmax, self).__init__(
+            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
+        assert len(grp_sizes) == num_classes * num_attributes
+        # attribute-agnostic as modifying class-dependent margins
+        class_sizes = [np.sum(grp_sizes[i * num_attributes:(i+1) * num_attributes]) for i in range(num_classes)]
+        self.n_samples_per_cls = torch.FloatTensor(class_sizes)
+
+    def _compute_loss(self, i, x, y, a, step):
+        x = self.predict(x)
+        spc = self.n_samples_per_cls.type_as(x)
+        spc = spc.unsqueeze(0).expand(x.shape[0], -1)
+        x = x + spc.log()
+        loss_value = F.cross_entropy(input=x, target=y)
+
+        return loss_value
+
+
+class MA(ERM):
+    """
+    Empirical Risk Minimization (ERM) with Moving Average (MA) prediction model
+    from https://arxiv.org/abs/2110.10832
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.network_ma = copy.deepcopy(self.network)
+        self.network_ma.eval()
+        self.ma_start_iter = 100
+        self.global_iter = 0
+        self.ma_count = 0
+
+    def update(self, *args, **kwargs):
+        result = super().update(*args, **kwargs)
+        self.update_ma()
+        return result
+
+    def predict(self, x):
+        self.network_ma.eval()
+        return self.network_ma(x)
+
+    def update_ma(self):
+        self.global_iter += 1
+        if self.global_iter>= self.ma_start_iter:
+            self.ma_count += 1
+            for param_q, param_k in zip(self.network.parameters(), self.network_ma.parameters()):
+                param_k.data = (param_k.data * self.ma_count + param_q.data)/(1.+self.ma_count)
+        else:
+            for param_q, param_k in zip(self.network.parameters(), self.network_ma.parameters()):
+                param_k.data = param_q.data
+
 class LP(ERM):
     """Linear Probe"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
@@ -210,7 +253,7 @@ class LP(ERM):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class LoRAERM(ERM):
+class LoRAERM(BSoftmax):
     """ERM with LoRA applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(LoRAERM, self).__init__(
@@ -221,7 +264,7 @@ class LoRAERM(ERM):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class DoRAERM(ERM):
+class DoRAERM(BSoftmax):
     """ERM with DoRA applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(DoRAERM, self).__init__(
@@ -232,7 +275,7 @@ class DoRAERM(ERM):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class MaskERM(ERM):
+class MaskERM(BSoftmax):
     """ERM with Masking applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(MaskERM, self).__init__(
@@ -249,7 +292,7 @@ class MaskERM(ERM):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class GMixoutERM(ERM):
+class GMixoutERM(BSoftmax):
     """ERM with Mixout applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(GMixoutERM, self).__init__(
@@ -390,27 +433,6 @@ class LDAM(ERM):
         loss_value = F.cross_entropy(self.hparams["scale"] * output, y)
 
         return loss_value
-
-
-class BSoftmax(ERM):
-    """Balanced softmax, https://arxiv.org/abs/2007.10740"""
-    def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
-        super(BSoftmax, self).__init__(
-            data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes)
-        assert len(grp_sizes) == num_classes * num_attributes
-        # attribute-agnostic as modifying class-dependent margins
-        class_sizes = [np.sum(grp_sizes[i * num_attributes:(i+1) * num_attributes]) for i in range(num_classes)]
-        self.n_samples_per_cls = torch.FloatTensor(class_sizes)
-
-    def _compute_loss(self, i, x, y, a, step):
-        x = self.predict(x)
-        spc = self.n_samples_per_cls.type_as(x)
-        spc = spc.unsqueeze(0).expand(x.shape[0], -1)
-        x = x + spc.log()
-        loss_value = F.cross_entropy(input=x, target=y)
-
-        return loss_value
-
 
 class CRT(ERM):
     """Classifier re-training with balanced sampling during the second earning stage"""

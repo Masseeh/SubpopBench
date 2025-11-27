@@ -223,9 +223,10 @@ if __name__ == "__main__":
         if os.path.isfile(args.resume):
             print(f"===> Loading checkpoint '{args.resume}'")
             checkpoint = torch.load(args.resume, weights_only=False)
-            start_step = checkpoint['start_step']
+            # start_step = checkpoint['start_step']
+            start_step = n_steps
             algorithm.load_state_dict(checkpoint['model_dict'])
-            es = checkpoint['early_stopper']
+            es = checkpoint.get('early_stopper', es)
             print(f"===> Loaded checkpoint '{args.resume}' (step [{start_step}])")
         else:
             print(f"===> No checkpoint found at '{args.resume}'")

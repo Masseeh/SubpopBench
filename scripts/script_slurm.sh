@@ -29,6 +29,8 @@ algorithm="ERM"
 dense=true
 mask_momentum=false
 
+resume="output/model_soups/model.pkl"
+
 
 if [ -z "$SLURM_JOB_ID" ]; then
     echo "Running on a local machine"
@@ -56,6 +58,7 @@ function parse_args
     done
 
     if [[ "${ft}" != "full" \
+            &&  "${ft}" != "ma" \
             &&  "${ft}" != "lp" \
             &&  "${ft}" != "lora" \
             &&  "${ft}" != "dora" \
@@ -76,6 +79,10 @@ if [ $ft == "lp" ]; then
   algorithm="LP"
   store_postfix="lr${lr}"
   echo "Using LP with learning rate $lr"
+fi
+if [ $ft == "ma" ]; then
+  algorithm="MA"
+  echo "Using MA with learning rate $lr"
 fi
 if [ $ft == "lora" ]; then
   lr=1e-4
@@ -142,4 +149,5 @@ python -m subpopbench.train \
       --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask_sparsity\": ${mask_sparsity}, \"mask_seed\": 42, \"mask_momentum\": ${mask_momentum}, \"mixout_refresh\": ${mixout_refresh}, \"mixout\": ${mixout},  \"mixout_ema\": ${mixout_ema}, \"dense\": ${dense}}" \
       --seed $seed \
       --checkpoint_freq 100 \
-      # --resume $resume
+      # --resume $resume \
+      # --skip_model_save
