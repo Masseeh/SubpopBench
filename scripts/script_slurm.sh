@@ -25,7 +25,7 @@ mixout_refresh=10
 mixout_ema=0.3
 store_postfix="full"
 seed=1
-algorithm="ERM"
+algorithm="BSoftmax"
 dense=true
 mask_momentum=false
 
@@ -55,6 +55,8 @@ function parse_args
             --seed )                      seed="$2";                    shift 2;;
             --mixout_refresh )            mixout_refresh="$2";          shift 2;;
             --mixout_ema )                mixout_ema="$2";              shift 2;;
+            --alpha )                     lora_alpha="$2";              shift 2;;
+            --rank )                      lora_rank="$2";              shift 2;;
             --lr )                        lr="$2";                      shift 2;;
             * )                           args+=("$1");                 shift;;         # if no match, add it to the positional args
         esac
@@ -118,7 +120,7 @@ fi
 if [ $ft == "gmixout" ]; then
   # lr=5e-5
   algorithm="GMixoutERM"
-  mask_momentum=true
+  mask_momentum=false
   store_postfix="bsoftmax_sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
   echo "Using GMixout with learning rate $lr"
 fi
