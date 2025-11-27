@@ -53,6 +53,9 @@ function parse_args
         case "$1" in
             --ft )                        ft="$2";                      shift 2;;
             --seed )                      seed="$2";                    shift 2;;
+            --mixout_refresh )            mixout_refresh="$2";          shift 2;;
+            --mixout_ema )                mixout_ema="$2";              shift 2;;
+            --lr )                        lr="$2";                      shift 2;;
             * )                           args+=("$1");                 shift;;         # if no match, add it to the positional args
         esac
     done
@@ -75,7 +78,7 @@ function parse_args
 parse_args "$@"
 
 if [ $ft == "lp" ]; then
-  lr=1e-3
+  # lr=1e-3
   algorithm="LP"
   store_postfix="lr${lr}"
   echo "Using LP with learning rate $lr"
@@ -85,25 +88,25 @@ if [ $ft == "ma" ]; then
   echo "Using MA with learning rate $lr"
 fi
 if [ $ft == "lora" ]; then
-  lr=5e-5
+  # lr=5e-5
   algorithm="LoRAERM"
   store_postfix="bsoftmax_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
 if [ $ft == "dora" ]; then
-  lr=5e-5
+  # lr=5e-5
   algorithm="DoRAERM"
   store_postfix="bsoftmax_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using DoRA with learning rate $lr"
 fi
 if [ $ft == "mask" ]; then
-  lr=1e-4
+  # lr=1e-4
   algorithm="MaskERM"
   store_postfix="bsoftmax_sparsity${mask_sparsity}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
 if [ $ft == "mixout" ]; then
-  lr=5e-5
+  # lr=5e-5
   mixout=true
   mixout_refresh=1
   mixout_ema=1.0
@@ -113,7 +116,7 @@ if [ $ft == "mixout" ]; then
   echo "Using Mixout with learning rate $lr"
 fi
 if [ $ft == "gmixout" ]; then
-  lr=5e-5
+  # lr=5e-5
   algorithm="GMixoutERM"
   mask_momentum=true
   store_postfix="bsoftmax_sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
