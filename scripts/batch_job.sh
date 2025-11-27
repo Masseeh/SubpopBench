@@ -10,21 +10,11 @@
 
 set -e
 
-for ft in lora dora mask mixout
-do
-    for lr in 1e-5 3e-5 5e-5 1e-4
-    do
-        bash scripts/script_slurm.sh --ft $ft --lr $lr
-    done
-done
-
-for lr in 1e-5 3e-5 5e-5 1e-4
-do
-    for mixout_refresh in 5 10 20
-    do
-        for mixout_ema in 0.1 0.3 0.5
-        do
-            bash scripts/script_slurm.sh --ft gmixout --lr $lr --mixout_refresh $mixout_refresh --mixout_ema $mixout_ema
-        done
-    done
-done
+bash scripts/script_slurm.sh --ft lora --lr 5e-5
+bash scripts/script_slurm.sh --ft dora --lr 5e-5
+bash scripts/script_slurm.sh --ft mask --lr 1e-4
+bash scripts/script_slurm.sh --ft mask --lr 5e-4
+bash scripts/script_slurm.sh --ft mixout --lr 5e-5
+bash scripts/script_slurm.sh --ft mixout --lr 3e-5
+bash scripts/script_slurm.sh --ft gmixout --lr 5e-5 --mixout_refresh 10 --mixout_ema 0.3
+bash scripts/script_slurm.sh --ft gmixout --lr 3e-5 --mixout_refresh 10 --mixout_ema 0.3
