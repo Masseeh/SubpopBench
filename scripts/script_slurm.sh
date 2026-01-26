@@ -92,19 +92,19 @@ fi
 if [ $ft == "lora" ]; then
   # lr=5e-5
   algorithm="LoRAERM"
-  store_postfix="bsoftmax_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
+  store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using LoRA with learning rate $lr"
 fi
 if [ $ft == "dora" ]; then
   # lr=5e-5
   algorithm="DoRAERM"
-  store_postfix="bsoftmax_rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
+  store_postfix="rank${lora_rank}_alpha${lora_alpha}_lr${lr}"
   echo "Using DoRA with learning rate $lr"
 fi
 if [ $ft == "mask" ]; then
   # lr=1e-4
   algorithm="MaskERM"
-  store_postfix="bsoftmax_sparsity${mask_sparsity}_lr${lr}"
+  store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Masking with learning rate $lr"
 fi
 if [ $ft == "mixout" ]; then
@@ -114,14 +114,14 @@ if [ $ft == "mixout" ]; then
   mixout_ema=1.0
   mask_momentum=false
   algorithm="GMixoutERM"
-  store_postfix="bsoftmax_sparsity${mask_sparsity}_lr${lr}"
+  store_postfix="sparsity${mask_sparsity}_lr${lr}"
   echo "Using Mixout with learning rate $lr"
 fi
 if [ $ft == "gmixout" ]; then
   # lr=5e-5
   algorithm="GMixoutERM"
   mask_momentum=false
-  store_postfix="bsoftmax_sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
+  store_postfix="sparsity${mask_sparsity}_refresh${mixout_refresh}_ema${mixout_ema}_lr${lr}"
   echo "Using GMixout with learning rate $lr"
 fi
 
@@ -154,5 +154,6 @@ python -m subpopbench.train \
       --hparams "{\"batch_size\": ${batch_size}, \"lr\": ${lr}, \"lora_rank\": ${lora_rank}, \"lora_alpha\": ${lora_alpha}, \"mask_sparsity\": ${mask_sparsity}, \"mask_seed\": 42, \"mask_momentum\": ${mask_momentum}, \"mixout_refresh\": ${mixout_refresh}, \"mixout\": ${mixout},  \"mixout_ema\": ${mixout_ema}, \"dense\": ${dense}}" \
       --seed $seed \
       --checkpoint_freq 100 \
+      # --steps 101
       # --resume $resume \
       # --skip_model_save
