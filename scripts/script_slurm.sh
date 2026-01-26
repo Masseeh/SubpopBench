@@ -11,7 +11,7 @@
 # abort on error
 set -e
 
-dataset="CivilCommentsFine"
+dataset="MultiNLI"
 arch="bert-base-uncased"
 
 ft="full"  # full/lp/lora/dora/mask/gmixout/mixout

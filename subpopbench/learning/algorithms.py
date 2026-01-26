@@ -253,7 +253,8 @@ class LP(ERM):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class LoRAERM(BSoftmax):
+# class LoRAERM(BSoftmax):
+class LoRAERM(ERM):
     """ERM with LoRA applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(LoRAERM, self).__init__(
@@ -264,7 +265,8 @@ class LoRAERM(BSoftmax):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class DoRAERM(BSoftmax):
+# class DoRAERM(BSoftmax):
+class DoRAERM(ERM):
     """ERM with DoRA applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(DoRAERM, self).__init__(
@@ -275,7 +277,8 @@ class DoRAERM(BSoftmax):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class MaskERM(BSoftmax):
+# class MaskERM(BSoftmax):
+class MaskERM(ERM):
     """ERM with Masking applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(MaskERM, self).__init__(
@@ -292,7 +295,8 @@ class MaskERM(BSoftmax):
         self.network = nn.Sequential(self.featurizer, self.classifier)
         self._init_model()
 
-class GMixoutERM(BSoftmax):
+# class GMixoutERM(BSoftmax):
+class GMixoutERM(ERM):
     """ERM with Mixout applied to the featurizer"""
     def __init__(self, data_type, input_shape, num_classes, num_attributes, num_examples, hparams, grp_sizes=None):
         super(GMixoutERM, self).__init__(
