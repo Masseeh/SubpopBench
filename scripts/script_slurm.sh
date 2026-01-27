@@ -25,7 +25,7 @@ mixout_refresh=10
 mixout_ema=0.3
 store_postfix="full"
 seed=1
-algorithm="BSoftmax"
+algorithm="ERM"
 dense=true
 mask_momentum=false
 

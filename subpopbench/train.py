@@ -343,7 +343,7 @@ if __name__ == "__main__":
     final_eval_loaders = [FastDataLoader(
         dataset=dset,
         batch_size=max(128, hparams['batch_size'] * 2),
-        num_workers=num_workers)
+        num_workers=4)
         for dset in [vars(datasets)[args.dataset](args.data_dir, split, hparams) for split in split_names]
     ]
     final_results = {split: eval_helper.eval_metrics(algorithm, loader, device)
