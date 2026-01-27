@@ -10,14 +10,24 @@
 
 set -e
 
-bash scripts/script_slurm.sh --ft lora --lr 5e-5
-bash scripts/script_slurm.sh --ft dora --lr 5e-5
-bash scripts/script_slurm.sh --ft mask --lr 1e-4
-bash scripts/script_slurm.sh --ft mask --lr 5e-4
-bash scripts/script_slurm.sh --ft mixout --lr 5e-5
-bash scripts/script_slurm.sh --ft mixout --lr 3e-5
-bash scripts/script_slurm.sh --ft gmixout --lr 5e-5 --mixout_refresh 10 --mixout_ema 0.3
-bash scripts/script_slurm.sh --ft gmixout --lr 3e-5 --mixout_refresh 10 --mixout_ema 0.3
+# bash scripts/script_slurm.sh --ft lora --lr 5e-5
+# bash scripts/script_slurm.sh --ft dora --lr 5e-5
+# bash scripts/script_slurm.sh --ft mask --lr 1e-4
+# bash scripts/script_slurm.sh --ft mask --lr 5e-4
+# bash scripts/script_slurm.sh --ft mixout --lr 5e-5
+# bash scripts/script_slurm.sh --ft mixout --lr 3e-5
+# bash scripts/script_slurm.sh --ft gmixout --lr 5e-5 --mixout_refresh 10 --mixout_ema 0.3
+# bash scripts/script_slurm.sh --ft gmixout --lr 3e-5 --mixout_refresh 10 --mixout_ema 0.3
+
+for rank in 16 32
+do
+    for lr in 1e-5 5e-5 1e-4
+    do
+        bash scripts/script_slurm.sh --ft lora --lr $lr --rank $rank
+    done
+done
+
+
 
 # bash scripts/script_slurm.sh --ft mixout --lr 1e-5
 # bash scripts/script_slurm.sh --ft mixout --lr 1e-4
