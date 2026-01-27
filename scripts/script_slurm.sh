@@ -79,6 +79,12 @@ function parse_args
 
 parse_args "$@"
 
+if [ $ft == "full" ]; then
+  # lr=1e-3
+  algorithm="ERM"
+  store_postfix="lr${lr}"
+  echo "Using ERM with learning rate $lr"
+fi
 if [ $ft == "lp" ]; then
   # lr=1e-3
   algorithm="LP"
